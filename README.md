@@ -1,7 +1,2 @@
-# Airflow-Docs-zh_CN
+# Initial page
 
-Airflow中文文档
-
-### todo
-
-- [ ] 翻译文章
