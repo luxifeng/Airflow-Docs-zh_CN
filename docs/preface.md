@@ -1,4 +1,4 @@
-# Apache Airflow \(incubating\) Documentation
+# 序言
 
 {% hint style="info" %}
 **免责声明**：Apache Airflow是一个Apache软件基金会（ASF）孵化项目，由Apache孵化器赞助。 所有被ASF接受的新项目都要求先进行孵化，直到通过进一步的审查，表明该项目的基础设施、通信和决策过程已经稳定下来，与其他成功的ASF项目的稳定方式一致。 虽然孵化状态并不一定能反映代码的完整性和稳定性，但它确实表明该项目尚未得到ASF的完全认可。
