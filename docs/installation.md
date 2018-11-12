@@ -17,7 +17,7 @@ pip install apache-airflow[postgres,s3]
 {% hint style="info" %}
 GPL依赖
 
-Apache Airflow默认获取的版本会依赖GPL库（‘unidecode’）。如果这是个问题的化可以用`export SLUGIFY_USES_TEXT_UNIDECODE=yes`强制不依赖GPL库，然后继续正常安装。注意每次升级都要这样指定。同时也注意如果_unidecode_已经在系统中了，那么依赖还是会生效。
+Apache Airflow默认获取的版本会依赖GPL库（‘unidecode’）。如果这是个问题的话可以用`export SLUGIFY_USES_TEXT_UNIDECODE=yes`强制不依赖GPL库，然后继续正常安装。注意每次升级都要这样指定。同时也注意如果_unidecode_已经在系统中了，那么依赖还是会生效。
 {% endhint %}
 
 ## 额外的包
