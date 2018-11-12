@@ -168,5 +168,7 @@ t3 = BashOperator(
 
 请注意 `templated_command`把代码逻辑包含在`{% %}`块中，引用参数如`{{ ds }}`，调用函数如`{{ macros.ds_add(ds, 7)}}`，引用用户定义参数如`{{ params.my_param }}`。
 
+`BaseOperator`中的`params`钩子允许你将参数和/或对象的字典传递给模板。请花些时间理解参数`my_param`是如何传递给模板的。
 
+也可以将文件传递给`bash_command`参数，像`bash_command='templated_command.sh'`，文件位置是包含管道文件的目录的相对路径（本例是`tutorial.py`）。这样做有很多理由，比如分离脚本中的逻辑和管道代码、允许高亮不同语言组成的文件中的正确代码，以及保持结构化管道的整体灵活度。还可以在DAG构造函数中定义你的`template_searchpath`指向任何文件夹位置。
 
