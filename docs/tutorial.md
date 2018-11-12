@@ -166,3 +166,7 @@ t3 = BashOperator(
     dag=dag)
 ```
 
+请注意 `templated_command`把代码逻辑包含在`{% %}`块中，引用参数如`{{ ds }}`，调用函数如`{{ macros.ds_add(ds, 7)}}`，引用用户定义参数如`{{ params.my_param }}`。
+
+
+
