@@ -60,7 +60,7 @@ Apache Airflow默认获取的版本会依赖GPL库（‘unidecode’）。如果
 
 ## 初始化Airflow数据库
 
-Airflow要求你在能运行任务之前先初始化数据库。如果你仅仅是为了实验和学习Airflow，那么你可以继续使用默认的SQLite。如果你不想使用SQLite，那么可以看看[初始化数据库后端](how-to-guides.md#chu-shi-hua-shu-ju-ku-hou-duan)设置一个不同的数据库。
+Airflow要求你在能运行任务之前先初始化数据库。如果你仅仅是为了实验和学习Airflow，那么你可以继续使用默认的SQLite。如果你不想使用SQLite，那么可以看看[初始化数据库后端](docs/how-to-guides.md#chu-shi-hua-shu-ju-ku-hou-duan)设置一个不同的数据库。
 
 配置好数据库之后，跑任务之前，你需要初始化数据库：
 

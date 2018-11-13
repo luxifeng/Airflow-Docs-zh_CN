@@ -38,5 +38,5 @@ airflow backfill example_bash_operator -s 2015-01-01 -e 2015-01-02
 
 ## 下一步做什么？
 
-从现在开始，你可以打开[教程](tutorial.md)章节了解更多的示例，或者你准备好了小试牛刀，那么就去[指南](how-to-guides.md)章节看一看吧。
+从现在开始，你可以打开[教程](tutorial.md)章节了解更多的示例，或者你准备好了小试牛刀，那么就去[指南](docs/how-to-guides.md)章节看一看吧。
 

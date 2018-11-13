@@ -10,7 +10,7 @@ Airflow是一个以编程方式来编辑、调度和监控工作流的平台。
 
 当工作流用代码来定义时，它们就编程更加地可维护、可版本化、可测试与可协作。
 
-![](../.gitbook/assets/airflow.gif)
+![](.gitbook/assets/airflow.gif)
 
 ## 原则
 

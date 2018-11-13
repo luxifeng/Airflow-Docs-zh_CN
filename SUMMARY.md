@@ -1,14 +1,15 @@
 # Table of contents
 
 * [Airflow-Docs-zh\_CN](README.md)
+* [序言](preface.md)
+* [项目](project.md)
+* [许可](license.md)
+* [快速启动](quick-start.md)
+* [安装](installation.md)
+* [教程](tutorial.md)
 
-## docs
+## how-to guides
 
-* [序言](docs/preface.md)
-* [项目](docs/project.md)
-* [许可](docs/license.md)
-* [快速启动](docs/quick-start.md)
-* [安装](docs/installation.md)
-* [教程](docs/tutorial.md)
-* [指南](docs/how-to-guides.md)
+* [操作指南](docs/how-to-guides.md)
+* [设置配置项](docs/setting-configuration-options.md)
 
