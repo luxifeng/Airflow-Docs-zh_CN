@@ -10,6 +10,6 @@
 
 ## how-to guides
 
-* [操作指南](docs/how-to-guides.md)
-* [设置配置项](docs/setting-configuration-options.md)
+* [操作指南](how-to-guides/how-to-guides.md)
+* [设置配置项](how-to-guides/setting-configuration-options.md)
 
