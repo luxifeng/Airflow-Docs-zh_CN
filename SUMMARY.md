@@ -13,4 +13,5 @@
 * [操作指南](how-to-guides/how-to-guides.md)
 * [设置配置项](how-to-guides/setting-configuration-options.md)
 * [初始化数据库后端](how-to-guides/initializing-a-database-backend.md)
+* [使用operator](how-to-guides/using-operators.md)
 
