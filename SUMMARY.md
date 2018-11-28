@@ -14,4 +14,5 @@
 * [设置配置项](how-to-guides/setting-configuration-options.md)
 * [初始化数据库后端](how-to-guides/initializing-a-database-backend.md)
 * [使用operator](how-to-guides/using-operators.md)
+* [管理连接](how-to-guides/managing-connections.md)
 
