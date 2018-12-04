@@ -16,4 +16,8 @@
 * [使用operator](how-to-guides/using-operators.md)
 * [管理连接](how-to-guides/managing-connections.md)
 * [安全连接](how-to-guides/securing-connections.md)
+* [写日志](how-to-guides/xie-ri-zhi.md)
+* [使用Celery横向扩展](how-to-guides/scaling-out-with-celery.md)
+* [使用Dask横向扩展](how-to-guides/shi-yong-dask-heng-xiang-kuo-zhan.md)
+* [使用Mesos横向扩展（社区贡献）](how-to-guides/shi-yong-mesos-heng-xiang-kuo-zhan-she-qu-gong-xian.md)
 
