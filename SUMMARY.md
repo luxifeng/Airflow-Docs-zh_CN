@@ -15,4 +15,5 @@
 * [初始化数据库后端](how-to-guides/initializing-a-database-backend.md)
 * [使用operator](how-to-guides/using-operators.md)
 * [管理连接](how-to-guides/managing-connections.md)
+* [安全连接](how-to-guides/securing-connections.md)
 
