@@ -23,4 +23,5 @@
 * [使用Mesos横向扩展（社区贡献）](how-to-guides/scaling-out-with-mesos-community-contributed.md)
 * [使用systemd运行Airflow](how-to-guides/running-airflow-with-systemd.md)
 * [使用upstart运行Airflow](how-to-guides/running-airflow-with-upstart-1.md)
+* [使用测试模式配置](how-to-guides/using-the-test-mode-configuration.md)
 
