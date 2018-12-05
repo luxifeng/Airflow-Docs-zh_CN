@@ -4,7 +4,7 @@
 
 更多信息请访问[Operator Concepts](https://airflow.apache.org/concepts.html#concepts-operators)文档和[Operators API Reference](https://airflow.apache.org/code.html#api-reference-operators)。
 
-## BashOperator
+### BashOperator
 
 使用 [`BashOperator`](https://airflow.apache.org/code.html#airflow.operators.bash_operator.BashOperator)来执行[Bash](https://www.gnu.org/software/bash/) shell命令。
 
@@ -13,7 +13,7 @@ run_this = BashOperator(
     task_id='run_after_loop', bash_command='echo 1', dag=dag)
 ```
 
-### 制作模板
+#### 制作模板
 
 你可以使用Jinja模板来参数化`bash_command`的参数。
 
@@ -24,9 +24,9 @@ task = BashOperator(
     dag=dag)
 ```
 
-### 疑难解答
+#### 疑难解答
 
-#### Jinja模板找不到
+**Jinja模板找不到**
 
 用`bash_command`参数直接调用Bash脚本时要在脚本名字后面添加一个空格。因为Airflow会尝试将一个Jinja模板应用于此，但行不通。
 
@@ -42,7 +42,7 @@ t2 = BashOperator(
     dag=dag)
 ```
 
-## PythonOperator
+### PythonOperator
 
 使用[`PythonOperator`](https://airflow.apache.org/code.html#airflow.operators.python_operator.PythonOperator)来执行Python可调用函数。
 
@@ -60,7 +60,7 @@ run_this = PythonOperator(
     dag=dag)
 ```
 
-### 传入参数
+#### 传入参数
 
 使用`op_args`和`op_kwargs`参数来传递额外的参数给Python可调用函数。
 
@@ -81,15 +81,15 @@ for i in range(5):
     task.set_upstream(run_this)
 ```
 
-### 制作模板
+#### 制作模板
 
 当你设置`provide_context`参数为`True`时，Airflow会传入其他关键词参数集：每一个都对应着一个Jinja模板变量和一个`templates_dict`参数。
 
 `templates_dict`参数已经模板化了，因此字典中的每一个值都会被判断为Jinja模板。
 
-## Google Cloud Platform Operators
+### Google Cloud Platform Operators
 
-### GoogleCloudStorageToBigQueryOperator
+#### GoogleCloudStorageToBigQueryOperator
 
 使用[`GoogleCloudStorageToBigQueryOperator`](https://airflow.apache.org/integration.html#airflow.contrib.operators.gcs_to_bq.GoogleCloudStorageToBigQueryOperator)来执行BigQuery加载作业。
 

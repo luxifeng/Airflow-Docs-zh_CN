@@ -8,7 +8,7 @@ Airflow需要知道如何连接到你的环境。其他系统和服务的主机�
 
 更多信息请访问[Connenctions Concepts](https://airflow.apache.org/concepts.html#concepts-connections)文档。
 
-## 使用用户界面创建连接
+### 使用用户界面创建连接
 
 打开用户界面上的`Admin->Connection`部分。点击`Create`链接创建新的连接。
 
@@ -19,7 +19,7 @@ Airflow需要知道如何连接到你的环境。其他系统和服务的主机�
 3. 填写剩下的字段。访问[Connection Types](https://airflow.apache.org/howto/manage-connections.html#manage-connections-connection-types)查看不同连接类型下的字段描述。
 4. 点击`Save`按钮创建连接。
 
-## 使用用户界面编辑连接
+### 使用用户界面编辑连接
 
 打开用户界面上的`Admin->Connection`部分。点击连接列表中你想要编辑的连接旁边的铅笔图标。
 
@@ -27,13 +27,13 @@ Airflow需要知道如何连接到你的环境。其他系统和服务的主机�
 
 修改连接属性，点击`Save`按钮保存修改。
 
-## 使用环境变量创建连接
+### 使用环境变量创建连接
 
 Airflow pipeline中的连接可以使用环境变量创建。为正确使用连接，环境变量需为Airflow设置前缀为`AIRFLOW_CONN_`，值的格式为URI格式。
 
 引用Airflow pipeline中的连接时，参数`conn_id`应为无前缀的变量名。例如，如果`conn_id`命名为`postgres_master`，那么相应的环境变量就应命名为`AIRFLOW_CONN_POSTGRES_MASTER`（注意环境变量都为大写字母）。Airflow假设环境变量返回的值是URI格式（如：`postgres://user:password@localhost:5432/master`或`s3://accesskey:secretkey@S3`）。
 
-## 连接类型
+### 连接类型
 
 ### Google Cloud Platform
 
