@@ -3,11 +3,13 @@
 * [Airflow-Docs-zh\_CN](README.md)
 * [序言](preface.md)
 * [项目](project.md)
-* [许可](license.md)
 * [快速启动](quick-start.md)
+* [许可](license.md)
 * [安装](installation.md)
 * [教程](tutorial.md)
 * [插件](plugins.md)
+* [UI/截图](ui-screenshots.md)
+* [概念](concepts.md)
 
 ## how-to guides
 
