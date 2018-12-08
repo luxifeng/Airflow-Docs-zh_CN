@@ -50,7 +50,7 @@ print(op.owner) # Airflow
 
 ### 上下文管理器（Context Managers）
 
-_Airflow 1.8中增加_
+_Airflow 1.8中新增_
 
 DAG可以用作上下文管理器，自动分配新的operator给那个DAG。
 
@@ -85,4 +85,81 @@ Airflow提供了很多operator，应付许多常用的任务，包括：
 只有当operator分配给了DAG，Airflow才会加载它们。
 
 访问[使用Operator](https://airflow.apache.org/howto/operator.html)查看如何使用Airflow operators。
+
+### DAG分配（DAG Assignment）
+
+_Airflow 1.8中新增_
+
+Operators不用立即分配给DAGs（先前`dag`是个必需的参数）。然而，一旦一个operator分配给了一个DAG，它便不能被传递或未被赋值。DAG分配可以在创建operator时通过延迟分配甚至从其他operator推断的方式显式完成。
+
+```python
+dag = DAG('my_dag', start_date=datetime(2016, 1, 1))
+
+# sets the DAG explicitly
+explicit_op = DummyOperator(task_id='op1', dag=dag)
+
+# deferred DAG assignment
+deferred_op = DummyOperator(task_id='op2')
+deferred_op.dag = dag
+
+# inferred DAG assignment (linked operators must be in the same DAG)
+inferred_op = DummyOperator(task_id='op3')
+inferred_op.set_upstream(deferred_op)
+```
+
+### 位移组合（**Bitshift Composition**）
+
+_Airflow 1.8中新增_
+
+operator关系历来由`set_upstream()`和`set_downstream()`方法进行设置。Airflow 1.8中，operator关系可以靠Python位移操作符`>>`和`<<`来设置。下列四条语句在功能上是等同的：
+
+```python
+op1 >> op2
+op1.set_downstream(op2)
+
+op2 << op1
+op2.set_upstream(op1)
+```
+
+使用位移来组织operator时，它们的方向由位移操作符所指向的方向决定。例如，`op1 >> op2`表示先运行`op1`后运行`op2`。多个operator也能组成在一起——记住执行链是从左至右执行的，而且最右的对象总是会返回。例如：
+
+```python
+op1 >> op2 >> op3 << op4
+```
+
+等同于：
+
+```python
+op1.set_downstream(op2)
+op2.set_downstream(op3)
+op3.set_upstream(op4)
+```
+
+方便起见，DAG也能使用位移操作符。例如：
+
+```python
+dag >> op1 >> op2
+```
+
+等同于：
+
+```python
+op1.dag = dag
+op1.set_downstream(op2)
+```
+
+我们可以把它放到一起建立一个简单的pipeline：
+
+```python
+with DAG('my_dag', start_date=datetime(2016, 1, 1)) as dag:
+    (
+        DummyOperator(task_id='dummy_1')
+        >> BashOperator(
+            task_id='bash_1',
+            bash_command='echo "HELLO!"')
+        >> PythonOperator(
+            task_id='python_1',
+            python_callable=lambda: print("GOODBYE!"))
+    )
+```
 
