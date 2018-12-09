@@ -163,3 +163,66 @@ with DAG('my_dag', start_date=datetime(2016, 1, 1)) as dag:
     )
 ```
 
+### 任务（Tasks）
+
+一旦一个operator被实例化了，它就可以被称作“任务”。这个实例为调用抽象的operator定义了明确的值，参数化的任务就成了DAG的一个节点。
+
+### 任务实例（Task Instances）
+
+一个任务实例代表一个任务的具体运行，是dag、任务和时间点的结合。任务实例也有指示状态，如“running”、“success”、“failed”、“skipped”、“up for retry”等。
+
+### 工作流（Workflows）
+
+现在你已经熟悉了Airflow的核心构件。虽然一些概念可能听上去非常相似，但是这些词汇像这样概念化：
+
+* 有向无环图（DAG）：对工作发生顺序的描述
+* 操作（Operator）：充当执行某些工作的模板的类
+* 任务（Task）：operator的参数化实例
+* 任务实例（Task Instance）：（1）分配给DAG以及（2）有与具体DAG运行有关的状态的任务
+
+通过结合`DAGs`和`Operators`来创建`TaskInstances`，你可以建立复杂的工作流。
+
+### 附加功能
+
+除了核心的Airflow对象，还有大量更为复杂的特性，能够实现诸如限制对资源的同时访问、交叉通信、条件执行等等的行为。
+
+#### 钩子（Hooks）
+
+hooks是外部平台和数据库（如Hive、S3、MySQL、Postgres、HDFS和Pig）的接口。hooks在可能的情况下实现了一个通用接口，并充当operators的构件。它们也使用`airflow.models.Connection`模型来检索主机名和身份验证信息。hooks将认证代码和信息保存在pipeline之外，集中于元数据库。
+
+Hooks本身也十分有用，可以在Python脚本、Airflow  airflow.operators.PythonOperator和诸如iPython或Jupyter Notebook之类的交互环境中使用。
+
+#### 池（Pools）
+
+当太多进程同时冲击时，有些系统会不堪重负。Airflow池可以限制任意任务集合的执行并行度。池列表可在用户界面（`Menu -> Admin -> Pools`）进行管理，方法是赋予池名称，分配给它们一些工作槽。任务创建（即实例化operators）时，使用`pool`参数可将任务与其中一个现有池关联。
+
+```python
+aggregate_db_message_job = BashOperator(
+    task_id='aggregate_db_message_job',
+    execution_timeout=timedelta(hours=3),
+    pool='ep_data_pipeline_db_msg_agg',
+    bash_command=aggregate_db_message_job_cmd,
+    dag=dag)
+aggregate_db_message_job.set_upstream(wait_for_empty_queue)
+```
+
+`pool`参数可与`priority_weight`结合使用，决定队列中的优先级以及池中的工作槽打开时哪个任务最先执行。默认的`priority_weight`是`1`，可以被改成任意数字。将队列排序来评估下个执行任务时，我们会用到`priority_weight`，我们将该任务的所有下游任务的`priority_weight`值相加。你可以用这种方法抽出一个特定的重要任务，相应地，到达该任务的整个路径也会获得优先顺序。
+
+当工作槽填满时，任务会被如常调用。一旦容量到达极点，可运行的任务进入队列，它们的状态也会显示在用户界面上。随着工作槽释放，队列中的任务会根据（任务及其下游任务）的`priority_weight`启动运行。
+
+注意，默认情况下任务不会被分配给任何池，它们的执行并行度仅受执行器（executor）的设置的限制。
+
+#### 连接（Connections）
+
+与外部系统的连接信息保存在Airflow的元数据库中，并可在用户界面进行管理（`Menu -> Admin -> Connections`）。用户界面上可定义一个`conn_id`，以及附带的主机名/登录名/密码/模式信息。Airflow pipeline只需引用集中管理的`conn_id`，而无需在任何地方硬编码这些信息。
+
+也可定义许多具有相同`conn_id`的连接，这种情况下，当hooks使用`Basehook`的`get_connection`方法时，Airflow会随机选择一个连接，当与重试机制结合时，还会允许一些基本的负载均衡和容错。
+
+很多hooks已经设定默认的`conn_id`，这样operator使用该hook时，不需指明连接ID。例如，[`PostgresHook`](https://airflow.apache.org/code.html#airflow.hooks.postgres_hook.PostgresHook)的默认`conn_id`是`postgres_default`。
+
+访问[管理连接](https://airflow.apache.org/howto/manage-connections.html)获取关于如何创建和管理连接的信息。
+
+
+
+
+
