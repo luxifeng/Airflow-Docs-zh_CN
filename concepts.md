@@ -222,7 +222,19 @@ aggregate_db_message_job.set_upstream(wait_for_empty_queue)
 
 访问[管理连接](https://airflow.apache.org/howto/manage-connections.html)获取关于如何创建和管理连接的信息。
 
+#### 队列（Queues）
 
+使用CeleryExecutor时，可以指定任务送达的Celery队列。`queue`是BaseOperator的属性，所以任意任务可以分配给任意队列。环境中的默认队列可以在`airflow.cfg`的`celery -> default_queue`一项中定义。该配置定义了未指明时任务被分配到的队列，也定义了启动时Airflow节点应监听哪个队列。
+
+节点可以监听一个或多个任务队列。一个节点启动时（使用命令`airflow worker`），可以指明队列名，多个队列名用逗号隔开（如，`airflow worker -q spark`）。然后节点只会提取指定队列的任务。
+
+如果你需要专用节点，那这一点就变得挺有用，不管是从资源角度考虑（比如说非常轻量的任务，一个节点就能毫无问题地处理上千个该类任务），还是从环境角度考虑（你想要一个本身运行着Spark集群的节点，因为它需要非常独特的环境和安全权限）。
+
+#### XComs
+
+XComs能让任务之间交换消息，更多的细微的控制形式和分享状态。XComs时“cross-communication”的缩写。XComs主要由主键、值和时间戳定义，但是也可以跟踪一些属性，诸如任务/DAG之类创建了XCom并需可见的属性。任何能够pickled的对象都可以用作XCom值，因此，用户应该确保对象具有合适的大小。
+
+XComs可以被“推送”（发送）或“拉取”（接收）。当一个任务推送了一个XCom，其他任务都可以获取它。任务可以通过调用`xcom_push()`方法在任意时候推送XComs。此外，如果一个任务返回了一个值（来自Oprator的`execute()`方法或来自PythonOperator的`python_callable()`方法），那么就会自动推送包含了该值的XCom。
 
 
 
