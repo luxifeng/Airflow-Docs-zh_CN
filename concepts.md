@@ -236,5 +236,29 @@ XComs能让任务之间交换消息，更多的细微的控制形式和分享状
 
 XComs可以被“推送”（发送）或“拉取”（接收）。当一个任务推送了一个XCom，其他任务都可以获取它。任务可以通过调用`xcom_push()`方法在任意时候推送XComs。此外，如果一个任务返回了一个值（来自Oprator的`execute()`方法或来自PythonOperator的`python_callable()`方法），那么就会自动推送包含了该值的XCom。
 
+任务调用`xcom_pull()`取得XComs，选择性地根据诸如`key`、源`task_ids`和源`dag_id`等标准应用过滤器。默认情况下，`xcom_pull()`过滤那些从执行函数返回时自动给予XCom的key（与手动推送的XComs相反）。
 
+如果是将单独的`task_ids`语句传递给`xcom_pull`，那么会返回该任务最近的XCom值；如果是将`task_ids`列表传递给`xcom_pull`，那么会返回相应的XCom值列表。
+
+```python
+# inside a PythonOperator called 'pushing_task'
+def push_function():
+    return value
+
+# inside another PythonOperator where provide_context=True
+def pull_function(**context):
+    value = context['task_instance'].xcom_pull(task_ids='pushing_task')
+```
+
+也有可能是在模板中拉取XCom，下面是一个例子：
+
+```python
+SELECT * FROM {{ task_instance.xcom_pull(task_ids='foo', key='table_name') }}
+```
+
+注意，XCom与[变量（Variables](https://airflow.apache.org/concepts.html#variables)[）](https://airflow.apache.org/concepts.html#variables)类似，但是XCom是为任务间通信专门设计的，而非用于全局设置。
+
+#### 变量（Variables）
+
+变量是用来存储和获取任意内容或设置的通用方式，以简单的键值形式存储在Airflow中。可以通过用户界面（`Admin -> Variables`）、代码或命令行界面罗列、创建、更新和删除变量。此外，
 
