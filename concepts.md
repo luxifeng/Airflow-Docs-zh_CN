@@ -260,5 +260,43 @@ SELECT * FROM {{ task_instance.xcom_pull(task_ids='foo', key='table_name') }}
 
 #### 变量（Variables）
 
-变量是用来存储和获取任意内容或设置的通用方式，以简单的键值形式存储在Airflow中。可以通过用户界面（`Admin -> Variables`）、代码或命令行界面罗列、创建、更新和删除变量。此外，
+变量是用来存储和获取任意内容或设置的通用方式，以简单的键值形式存储在Airflow中。可以通过用户界面（`Admin -> Variables`）、代码或命令行界面罗列、创建、更新和删除变量。此外，json格式的配置文件可以通过用户界面批量上传。当虽然你的pipeline代码和大部分常量与变量应在代码中定义并由源码控制，但是通过用户界面访问和修改某些变量或配置项可能会排上用场。
+
+```python
+from airflow.models import Variable
+foo = Variable.get("foo")
+bar = Variable.get("bar", deserialize_json=True)
+```
+
+第二次调用是假设它是json内容，被反序列化成bar。注意Variable是sqlalchemy数据模型，可以被这样折腾。
+
+你可以通过下面句法使用来自jinja模板的变量：
+
+```python
+echo {{ var.value.<variable_name> }}
+```
+
+或者，如果你需要从变量反序列化json对象：
+
+```python
+echo {{ var.json.<variable_name> }}
+```
+
+#### 分支（Branching）
+
+有时候你需要工作流产生分支，或者根据上游任务的触发条件走特定的路径。一个解决方法是使用`BranchPythonOperator`。
+
+`BranchPythonOperator`与PythonOperator非常相似，但是前者的python回调函数可以返回task\_id。下游的路径跟随返回的task\_id，其他的路径都会被跳过。Python函数返回的task\_id引用的是BranchPythonOperator任务的直接下游任务。
+
+注意，使用设置了`depends_on_past=True`的`BranchPythonOperator`下游任务在逻辑上是合理的，因为`skipped`状态导致依赖过去成功的任务会出现阻塞。若所有直接上游任务为`skipped`状态，那该任务的状态也会是`skipped`。
+
+如果你想跳过某些任务，记住你不能设置空路径，如果由空路径，那么就设一个假任务。
+
+可以像这样，假任务“ branch\_false”会被跳过
+
+![](.gitbook/assets/branch_good.png)
+
+不可像这样，join任务会被跳过
+
+![](.gitbook/assets/branch_bad.png)
 
