@@ -290,7 +290,7 @@ echo {{ var.json.<variable_name> }}
 
 注意，使用设置了`depends_on_past=True`的`BranchPythonOperator`下游任务在逻辑上是合理的，因为`skipped`状态导致依赖过去成功的任务会出现阻塞。若所有直接上游任务为`skipped`状态，那该任务的状态也会是`skipped`。
 
-如果你想跳过某些任务，记住你不能设置空路径，如果由空路径，那么就设一个假任务。
+如果你想跳过某些任务，记住你不能设置空路径，如果有空路径，那么就设一个假任务。
 
 可以像这样，假任务“ branch\_false”会被跳过
 
