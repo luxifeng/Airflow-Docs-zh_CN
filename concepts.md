@@ -300,3 +300,102 @@ echo {{ var.json.<variable_name> }}
 
 ![](.gitbook/assets/branch_bad.png)
 
+#### 子有向无环图（SubDAGs）
+
+SubDAG非常适合有重复模式的工作流。使用Airflow时，定义一个返回DAG对象的函数是种不错的设计模式。
+
+加载数据时Airbnb会使用_分段-检查-交换_（_stage-check-exchange_）模式。数据分段存储在临时表，之后再对临时表的数据质量进行检查。通过检查之后这些分段数据才会移到生产表。
+
+还有另一个例子，考虑如下DAG：
+
+![](.gitbook/assets/subdag_before.png)
+
+我们可以将所有并行的`task-*`operator合并到一个SubDAG，这样最后的DAG就像下图一样：
+
+![](.gitbook/assets/subdag_after.png)
+
+注意SubDAG operators应该包含一个工厂方法，该方法能返回一个DAG对象。这可以防止在用户主界面上SubDAG被当成一个独立的DAG。例如：
+
+```python
+#dags/subdag.py
+from airflow.models import DAG
+from airflow.operators.dummy_operator import DummyOperator
+
+
+# Dag is returned by a factory method
+def sub_dag(parent_dag_name, child_dag_name, start_date, schedule_interval):
+  dag = DAG(
+    '%s.%s' % (parent_dag_name, child_dag_name),
+    schedule_interval=schedule_interval,
+    start_date=start_date,
+  )
+
+  dummy_operator = DummyOperator(
+    task_id='dummy_task',
+    dag=dag,
+  )
+
+  return dag
+```
+
+然后这个SubDAG能够被主DAG文件引用：
+
+```python
+# main_dag.py
+from datetime import datetime, timedelta
+from airflow.models import DAG
+from airflow.operators.subdag_operator import SubDagOperator
+from dags.subdag import sub_dag
+
+
+PARENT_DAG_NAME = 'parent_dag'
+CHILD_DAG_NAME = 'child_dag'
+
+main_dag = DAG(
+  dag_id=PARENT_DAG_NAME,
+  schedule_interval=timedelta(hours=1),
+  start_date=datetime(2016, 1, 1)
+)
+
+sub_dag = SubDagOperator(
+  subdag=sub_dag(PARENT_DAG_NAME, CHILD_DAG_NAME, main_dag.start_date,
+                 main_dag.schedule_interval),
+  task_id=CHILD_DAG_NAME,
+  dag=main_dag,
+)
+```
+
+你可以在主DAG的graph视图中放大SubDagOperator，查看SubDAG包含的任务：
+
+![](.gitbook/assets/subdag_zoom.png)
+
+还有一些关于使用SubDAG的小技巧：
+
+* 习惯上，一个SubDAG的`dag_id`应该以其父DAG名加点（dot）为前缀。如`parent.child`
+* 在主DAG和SubDAG之间分享参数的办法是传递参数给SubDAG operator（如上所示）
+* SubDAG必须设置调度时间，并且被启动。如果SubDAG的调度时间设置为`None`或`@Once`，那么SubDAG会成功执行但实际上没有做任何事
+* 在SubDagOperator上标记成功不会影响内部任务的状态
+* 不要再SubDAG中设置`depends_on_past=True`，因为这会令人困惑
+* 可以指定SubDAG的executor。如果你想在进程内运行SubDAG，一般情况下要使用SequentialExecutor，可以有效地将并行度限制为1。使用LocalExecutor会产生问题，因为它可能会过多地占用你的工作节点，在一个单独的工作槽运行多个任务
+
+示例程序请查看`airflow/example_dags`。
+
+#### 服务水平协议（SLAs
+
+服务水平协议，或者任务或DAG应该成功的时间点，可以以`timedelta`形式在任务级别设置。如果一个或多个实例在该时间点没有成功，那么就会发送一封警告邮件，详细列举错过它们的SLA的任务。事件也会被保存在数据库中，并且能在web界面`Browse->Missed SLAs`下看到对该类事件的分析与记录。
+
+#### 触发规则（Trigger Rules）
+
+尽管正常的工作流行为是当所有直接上游任务完事了就触发任务，但Airflow允许更为复杂的依赖设置。
+
+所有的operator都有个参数`trigger_rule`，该参数定义了生成的任务被触发的规则。`trigger_rule`的默认值是`all_success`，即规则是“当所有直接上游任务都执行成功时触发本任务”。下文所描述的规则，都是基于直接父任务定义的，并且都是创建任务时能被传递给任意operator的值：
+
+* `all_success`:（默认）所有父任务都执行成功
+* `all_failed`:所有父任务都是`failed`或`upstream_failed`状态
+* `all_done`:所有父任务都执行完毕
+* `one_failed`:一有父任务执行失败就执行本任务，它不需要等待所有的父任务执行完毕
+* `one_success`:一有父任务执行成功就执行本任务，他不需要等待所有的父任务执行完毕
+* `dummy`:依赖关系只是为了显示，本任务可以随意触发
+
+注意，这些`trigger_rule`参数值可以与`depends_on_past`（boolean）结合使用，当`depends_on_past`设为True时，如果该任务先前的调度未成功的话，任务也不会被触发。
+
