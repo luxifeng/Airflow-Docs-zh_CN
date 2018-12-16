@@ -399,3 +399,54 @@ sub_dag = SubDagOperator(
 
 注意，这些`trigger_rule`参数值可以与`depends_on_past`（boolean）结合使用，当`depends_on_past`设为True时，如果该任务先前的调度未成功的话，任务也不会被触发。
 
+#### 最近一次运行（Latest Run Only）
+
+标准的工作流行为包括了在特定日期/时间区间运行一系列任务。然而，一些工作流会执行那些运行时间独立然需按计划运行的任务，与定时任务非常相似。在这样的情况下，暂停期间丢失的回填（backfill）或运行中任务只会浪费CPU周期。
+
+为此，你可以使用`LatestOnlyOperator`来跳过DAG最近一次调度运行期间不被执行的任务。`LatestOnlyOperator`会跳过所有即时下游任务，同时，如果时间恰好不在其`execution_time`和下一次调度的`execution_time`之间，那么也会跳过其自身。
+
+你必须认识到跳过的任务与触发规则的相互影响。跳过的任务会级联通过触发规则`all_success`和`all_failed`，但不会通过`all_done`、`one_failed`、`one_success`和`dummy`。如果你想要一起使用`LatestOnlyOperator`和不会级联跳跃的触发规则，那么你需要保证`LatestOnlyOperator`是你想要跳过的任务的直接上游。
+
+可能可以通过触发规则的使用来混合那些应以典型的日期/时间依赖模式运行的任务和那些使用`LatestOnlyOperator`的任务。
+
+例如，看看下方的dag：
+
+```python
+#dags/latest_only_with_trigger.py
+import datetime as dt
+
+from airflow.models import DAG
+from airflow.operators.dummy_operator import DummyOperator
+from airflow.operators.latest_only_operator import LatestOnlyOperator
+from airflow.utils.trigger_rule import TriggerRule
+
+
+dag = DAG(
+    dag_id='latest_only_with_trigger',
+    schedule_interval=dt.timedelta(hours=4),
+    start_date=dt.datetime(2016, 9, 20),
+)
+
+latest_only = LatestOnlyOperator(task_id='latest_only', dag=dag)
+
+task1 = DummyOperator(task_id='task1', dag=dag)
+task1.set_upstream(latest_only)
+
+task2 = DummyOperator(task_id='task2', dag=dag)
+
+task3 = DummyOperator(task_id='task3', dag=dag)
+task3.set_upstream([task1, task2])
+
+task4 = DummyOperator(task_id='task4', dag=dag,
+                      trigger_rule=TriggerRule.ALL_DONE)
+task4.set_upstream([task1, task2])
+```
+
+该dag中，`latest_only`任务将跳过所有的运行，除了最近一次运行。`task1`是`latest_only`的直接下游任务，也会跳过所有的运行，除了最近一次。`task2`是完全独立于`lastest_only`的任务，将会在所有的调度周期中运行。`task3`是`task1`和`task2`的下游任务，因为默认的`trigger_rule`是`all_success`，它会接收到来自`task1`的级联跳跃。`task4`是`task1`和`task2`的下游任务，但是由于它的`trigger_rule`被设置成了`all_done`，所以一旦`task1`被跳过（一个有效的完成状态）以及`task2`执行完毕，它就会触发。
+
+![](.gitbook/assets/latest_only_with_trigger.png)
+
+
+
+
+
