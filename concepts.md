@@ -446,7 +446,91 @@ task4.set_upstream([task1, task2])
 
 ![](.gitbook/assets/latest_only_with_trigger.png)
 
+#### 僵尸与亡灵（Zombies & Undeads）
 
+任务实例每时每刻都会死，通常死亡是它们正常生命周期的一部分，但是有时也是意外死亡。
 
+僵尸任务的特点是没有心跳（由作业（job）周期性发送）而在数据库中是`running`状态。一个工作节点无法访问数据库时，Airflow进程被外部杀死时，或者一个几点重新启动时，都可能出现僵尸任务。调度进程会周期性地消除僵尸任务。
 
+亡灵进程的特点是进程与相应心跳存在，但Airflow并不知道该任务，使之在数据库中为`running`状态。这种不匹配通常伴着数据库状态的改变而出现，最可能的方式是在用户界面中的“Task Instances”视图中删除了行。任务会跟随心跳例程的指引确认它们的状态，而且会在发现自己处于“亡灵”状态时终止自己。
+
+#### 集群政策（Cluster Policy）
+
+你的本地Airflow设置文件可以定义一个`policy`函数，它能够根据其他任务或DAG的属性改变任务属性。它接受单个参数作为对任务对象的引用，期望能改变该任务的属性。
+
+例如，使用特定operator时，该方法可以应用特定的队列属性；或者强制执行任务超时策略，保证没有任务运行超过48小时。你的`airflow_settings.py`内的设置可能与下例类似：
+
+```python
+def policy(task):
+    if task.__class__.__name__ == 'HivePartitionSensor':
+        task.queue = "sensor_queue"
+    if task.timeout > timedelta(hours=48):
+        task.timeout = timedelta(hours=48)
+```
+
+#### 记录与说明（Documentation & Notes）
+
+可以向你的dag和任务对象添加记录和说明使之能在web界面上（dag的“Graph View”，任务的“Task Details”）可见。下面有一组特别的任务属性，如果被定义的，会被渲染成富文本内容：
+
+| attribute | rendered to |
+| :--- | :--- |
+| doc | monospace |
+| doc\_json | json |
+| doc\_yaml | yaml |
+| doc\_md | markdown |
+| doc\_rst | reStructuredText |
+
+请注意，对于dag，doc\_md是唯一的解释属性。
+
+如果你的任务是根据配置文件动态创建的，这一点将尤其有用，它允许你公开生成Airflow中相关任务的配置。
+
+```python
+"""
+### My great DAG
+"""
+
+dag = DAG('my_dag', default_args=default_args)
+dag.doc_md = __doc__
+
+t = BashOperator("foo", dag=dag)
+t.doc_md = """\
+#Title"
+Here's a [url](www.airbnb.com)
+"""
+```
+
+这个内容会以markdown形式分别在“Graph View”和“Task Details”页面中呈现。
+
+#### Jinja Templating
+
+Airflow充分利用[Jinja Templating](http://jinja.pocoo.org/docs/dev/)的力量，与宏（见[Macros](https://airflow.apache.org/code.html#macros)小节）一起结合使用，它会是一个很强大的工具。
+
+例如，假设你想要使用`BashOperator`将执行日期作为环境变量传递给Bash脚本。
+
+```python
+# The execution date as YYYY-MM-DD
+date = "{{ ds }}"
+t = BashOperator(
+    task_id='test_env',
+    bash_command='/tmp/test.sh ',
+    dag=dag,
+    env={'EXECUTION_DATE': date})
+```
+
+此处，`{{ ds }}`是一个宏，且由于`BashOperator`的`env`参数由Jinja模板化，执行时间就可作为名为`EXECUTION_DATE`的环境变量被你的Bash脚本获取。
+
+你可以将Jinja模板应用于文档中所有标记上“templated”的参数。模板替换只在你的operator的预执行函数被调用之前发生。
+
+### 打包的dag
+
+虽然你将通常以单独的`.py`文件形式说明dag，但可能有时候需要合并dag和它的依赖包。例如，你可能想要将几个dag合并在一起形成组合，或者你可能想要一起管理它们，或者你可能需要一个额外的模块可以在默认情况下无法被Airflow所在的系统获取到。为此，你可以创建一个zip文件，zip文件的根目录包含dag\(s\)以及在文件夹下未打包的额外模块。
+
+```text
+my_dag1.py
+my_dag2.py
+package1/__init__.py
+package1/functions.py
+```
+
+Airflow会扫描zio文件，并尝试加载my\_dag1.py和my\_dag2.py。它不会深入子目录，因为这些子目录被认为是潜在包。
 
