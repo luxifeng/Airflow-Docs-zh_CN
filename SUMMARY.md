@@ -10,6 +10,7 @@
 * [插件](plugins.md)
 * [UI/截图](ui-screenshots.md)
 * [概念](concepts.md)
+* [数据分析](data-profiling.md)
 
 ## how-to guides
 

@@ -532,5 +532,47 @@ package1/__init__.py
 package1/functions.py
 ```
 
-Airflow会扫描zio文件，并尝试加载my\_dag1.py和my\_dag2.py。它不会深入子目录，因为这些子目录被认为是潜在包。
+Airflow会扫描zio文件，并尝试加载`my_dag1.py`和`my_dag2.py`。它不会深入子目录，因为这些子目录被认为是潜在包。
+
+如果你想要增加模块依赖到你的DAG中，你基本上要做同样的事情，但是之后还要使用virtualenv和pip。
+
+```bash
+virtualenv zip_dag
+source zip_dag/bin/activate
+
+mkdir zip_dag_contents
+cd zip_dag_contents
+
+pip install --install-option="--install-lib=$PWD" my_useful_package
+cp ~/my_dag.py .
+
+zip -r zip_dag.zip *
+```
+
+{% hint style="info" %}
+zip文件会被插入到模块搜索列表（sys.path）的最前头，因此驻留在同一解释器中的其他代码都可以使用它。
+{% endhint %}
+
+{% hint style="info" %}
+开启pickling的打包dag不可用。
+{% endhint %}
+
+{% hint style="info" %}
+打包的dag不能包含动态库（如libz.so）。如果有模块用到它们，那这些动态库需在系统上可用。即只有纯python模块才能被打包。
+{% endhint %}
+
+### .airflowignore
+
+`.airflowignore`文件指定了`DAG_FOLDER`中Airflow应有意忽略的目录或文件。`.airflowignore`文件中的一行是一个正则表达式，名称（非DAG id）能匹配上任意一个正则表达式的目录或文件都会被忽略（底层使用`re.findall()`来匹配表达式）。总之它的工作原理就像一个`.gitignore`文件。
+
+`.airflowignore`文件应放置在你的`DAG_FOLDER`下。例如，你可以准备一个`.airflowignore`文件，包含如下内容：
+
+```bash
+project_a
+tenant_[\d]
+```
+
+然后，你的`DAG_FOLDER`下的文件，如 “project\_a\_dag\_1.py”、“TESTING\_project\_a.py”、“tenant\_1.py”、“project\_a/dag\_1.py”和“tenant\_1/dag\_1.py”，都会被忽略（如果一个目录名匹配上了任一表达式，则Airflow不再扫描该目录及其所有子文件夹。这可以提高DAG搜索的效率）。
+
+`.airflowignore`文件的作用范围是它所在的目录和该目录下的所有子文件夹。你也可为`DAG_FOLDER`中的子文件夹准备`.airflowignore`文件，这样它的作用范围就局限在该子文件夹内。
 
