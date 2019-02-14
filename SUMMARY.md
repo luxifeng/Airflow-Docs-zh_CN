@@ -11,6 +11,8 @@
 * [UI/截图](ui-screenshots.md)
 * [概念](concepts.md)
 * [数据分析](data-profiling.md)
+* [命令行接口](command-line-interface.md)
+* [调度与触发](scheduling-triggers.md)
 
 ## how-to guides
 
