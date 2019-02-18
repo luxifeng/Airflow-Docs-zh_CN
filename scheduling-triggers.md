@@ -18,5 +18,19 @@ airflow scheduler
 
 ### DAG Runs
 
+一次DAG运行是一个对象，表示一个时间维度的DAG实例。
+
+每个DAG可能有也可能没有调度计划，可以告知`DAG Runs`如何被创建。`schedule_interval`被定义为DAG参数，可以优先以`str`类型接收[cron表达式](https://en.wikipedia.org/wiki/Cron#CRON_expression)，或者一个`datetime.timedelta`对象。或者，你也可以使用其中一个cron “预设”：
+
+| preset | meaning | cron |
+| :--- | :--- | :--- |
+| `None` | Don’t schedule, use for exclusively “externally triggered” DAGs |  |
+| `@once` | Schedule once and only once |  |
+| `@hourly` | Run once an hour at the beginning of the hour | `0 * * * *` |
+| `@daily` | Run once a day at midnight | `0 0 * * *` |
+| `@weekly` | Run once a week at midnight on Sunday morning | `0 0 * * 0` |
+| `@monthly` | Run once a month at midnight of the first day of the month | `0 0 1 * *` |
+| `@yearly` | Run once a year at midnight of January 1 | `0 0 1 1 *` |
+
 
 
