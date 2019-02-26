@@ -24,13 +24,19 @@ airflow scheduler
 
 | preset | meaning | cron |
 | :--- | :--- | :--- |
-| `None` | Don’t schedule, use for exclusively “externally triggered” DAGs |  |
-| `@once` | Schedule once and only once |  |
-| `@hourly` | Run once an hour at the beginning of the hour | `0 * * * *` |
-| `@daily` | Run once a day at midnight | `0 0 * * *` |
-| `@weekly` | Run once a week at midnight on Sunday morning | `0 0 * * 0` |
-| `@monthly` | Run once a month at midnight of the first day of the month | `0 0 1 * *` |
-| `@yearly` | Run once a year at midnight of January 1 | `0 0 1 1 *` |
+| `None` | 勿调度，专为“外部触发”的DAG所用 |  |
+| `@once` | 只调度一次 |  |
+| `@hourly` | 每小时开始时运行一次 | `0 * * * *` |
+| `@daily` | 每天午夜运行一次 | `0 0 * * *` |
+| `@weekly` | 每周周日午夜运行一次 | `0 0 * * 0` |
+| `@monthly` | 每月第一天午夜运行一次 | `0 0 1 * *` |
+| `@yearly` | 每年1月1日午夜运行一次 | `0 0 1 1 *` |
+
+**请注意：**若不希望调度你的DAG，使用`schedule_interval=None`而非`schedule_interval='None'`。
+
+每一次调度，你的DAG都会被实例化，并且会创建一个`DAG Run`实体。
+
+DAG运行拥有一个与之关联的状态（运行中、失败、成功），并通知调度进程哪一个调度计划集可做任务提交评估。没有DAG运行层面的元数据的话，Airflow调度进程得做更多的事情，以找出哪些任务应被触发并有所进展。它也可能会在DAG变形过程中创造不需要的处理，比如说添加新任务。
 
 
 
